@@ -181,3 +181,23 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
 module.exports = app; // for testing
+
+app.post("/webhook", async (req, res) => {
+    try {
+        const update = req.body;
+        if (update.message && update.message.text) {
+            const chatId = update.message.chat.id;
+            const text = update.message.text;
+            const token = process.env.BOT_TOKEN;
+            let reply = text === "/start" ? "✅ Bot is alive!" : `You said: ${text}`;
+            await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: chatId, text: reply })
+            });
+        }
+        res.sendStatus(200);
+    } catch (error) {
+        res.sendStatus(500);
+    }
+});
